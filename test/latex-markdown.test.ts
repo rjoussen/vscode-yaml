@@ -33,6 +33,38 @@ describe('LaTeX in Markdown', () => {
     assert.ok(!svg.includes('currentColor'));
   });
 
+  it('renders each equation as a single SVG', async () => {
+    for (const markdown of ['$E = mc^2$', '$a + b = c + d = e - f$', '$$a = b$$', '$x$']) {
+      for (const html of [false, true]) {
+        const svgs = images((await renderLatexInMarkdown(markdown, color, html)).value);
+        assert.strictEqual(svgs.length, 1, markdown);
+        assert.match(svgs[0], /^<svg [^]*<\/svg>$/, markdown);
+        assert.strictEqual(svgs[0].split('<svg ').length, 2, `${markdown} is not broken into several SVGs`);
+      }
+    }
+  });
+
+  it('gives display math in a paragraph a paragraph of its own', async () => {
+    const image = '[A-Za-z0-9+/=]+';
+    const markdown = 'Energy $$E = mc^2$$. More';
+    assert.match(
+      await render(markdown),
+      new RegExp(`^Energy \\n\\n!\\[E = mc\\^2\\]\\(data:image/svg\\+xml;base64,${image}\\)\\n\\n\\. More$`)
+    );
+    const html = await renderLatexInMarkdown(markdown, color, true);
+    assert.match(
+      html.value,
+      new RegExp(
+        `^Energy \\n\\n<p align="center"><img alt="E = mc\\^2" src="data:image/svg\\+xml;base64,${image}"></p>\\n\\n\\. More$`
+      )
+    );
+    assert.strictEqual(html.html, true);
+    assert.match(await render('- item $$x$$ more'), /^- item \n {2}\n {2}!\[x\]\(data:[^)]+\)\n {2}\n {3}more$/);
+    for (const inline of ['[link $$x$$](https://example.com)', '*emphasis $$x$$*', '# Heading $$x$$']) {
+      assert.ok(!(await render(inline)).includes('\n'), `${inline} keeps its structure`);
+    }
+  });
+
   it('renders display math in a paragraph of its own', async () => {
     const result = await render('Sum:\n$$\n\\sum_{i=1}^n i\n$$\nDone');
 
@@ -96,7 +128,11 @@ describe('LaTeX in Markdown', () => {
       result.value,
       /^Ratio <img align="middle" alt="\\frac\{a\}\{b\} &#60; 1" src="data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+">/
     );
-    assert.match(result.value, / and !\[x\]\(data:/, 'display math stays a Markdown image');
+    assert.match(
+      result.value,
+      / and \n\n<p align="center"><img alt="x" src="data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+"><\/p>\n\n$/,
+      'display math gets a centered paragraph'
+    );
     const [, minY, , height] = viewBox(images(result.value)[0]);
     assert.strictEqual(height, -2 * minY, 'baseline is in the middle');
   });
@@ -121,7 +157,7 @@ describe('LaTeX in Markdown', () => {
       assert.strictEqual((await renderLatexInMarkdown(markdown, color, true)).html, true, markdown);
     }
     assert.strictEqual(
-      (await renderLatexInMarkdown('$$x$$ $\\notacommand$', color, true)).html,
+      (await renderLatexInMarkdown('[$$x$$](https://example.com) $\\notacommand$', color, true)).html,
       false,
       'no inline math rendered'
     );

@@ -19,6 +19,7 @@ export interface MathSpan {
   display: boolean;
   /** Continuation prefix for display equations inside lists and blockquotes. */
   prefix: string;
+  /** Whether a display equation is shown in a paragraph of its own. */
   block: boolean;
 }
 
@@ -77,8 +78,12 @@ function findMath(markdown: string, events: Event[]): { spans: MathSpan[]; hasHt
   const code: { start: number; end: number }[] = [];
   let hasHtml = false;
   let inImage = 0;
+  const open: string[] = [];
   for (let i = 0; i < events.length; i++) {
     const [kind, token, context] = events[i];
+    const parent = open[open.length - 1];
+    if (kind === 'enter') open.push(token.type);
+    else open.pop();
     if (token.type === 'image') inImage += kind === 'enter' ? 1 : -1;
     if (kind !== 'enter') continue;
     if (/^(paragraph|atxHeadingText|setextHeadingText)$/.test(token.type)) {
@@ -114,13 +119,14 @@ function findMath(markdown: string, events: Event[]): { spans: MathSpan[]; hasHt
     if (!tex.trim()) continue;
     const before = markdown.slice(markdown.lastIndexOf('\n', start - 1) + 1, start);
     const prefix = /^(?:[ \t]*>[ \t]?)*[ \t]*(?:(?:[-+*]|\d+[.)])[ \t]+)?/.exec(before)[0];
-    const after = markdown.slice(end, markdown.indexOf('\n', end) < 0 ? markdown.length : markdown.indexOf('\n', end));
     spans.push({
       start,
       end,
       tex: unescapePlainTex(tex.trim()),
       display,
-      block: display && before === prefix && !after.trim(),
+      // Display math directly in a paragraph gets a paragraph of its own, as in LaTeX. In a link, emphasis,
+      // heading or table cell, splitting the paragraph would break the surrounding Markdown.
+      block: display && (token.type === 'mathFlow' || parent === 'paragraph'),
       prefix: prefix.replace(/[-+*]|\d+[.)]/g, (marker) => ' '.repeat(marker.length)),
     });
   }

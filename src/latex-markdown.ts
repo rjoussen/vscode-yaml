@@ -62,7 +62,7 @@ export async function renderLatexInMarkdown(
     chunks.push(markdown.slice(offset, span.start), image);
     offset = span.end;
     size = nextSize;
-    usedHtml = usedHtml || (html && !span.display);
+    usedHtml = usedHtml || (html && (!span.display || span.block));
   }
   chunks.push(markdown.slice(offset));
   const result = { value: chunks.join(''), html: usedHtml };
@@ -81,12 +81,15 @@ export async function renderLatexInMarkdown(
 
 function svgToImage(svg: string, span: MathSpan, html: boolean): string {
   const { tex, display, block, prefix } = span;
+  const htmlAlt = tex.replace(/\s+/g, ' ').replace(/[&"<>]/g, (char) => `&#${char.charCodeAt(0)};`);
   if (html && !display) {
-    const alt = tex.replace(/\s+/g, ' ').replace(/[&"<>]/g, (char) => `&#${char.charCodeAt(0)};`);
-    return `<img align="middle" alt="${alt}" src="data:image/svg+xml;base64,${toBase64(centerBaseline(svg))}">`;
+    return `<img align="middle" alt="${htmlAlt}" src="data:image/svg+xml;base64,${toBase64(centerBaseline(svg))}">`;
   }
   const alt = tex.replace(/\s+/g, ' ').replace(/[\\`*_{}[\]()#+\-.!<>|$]/g, '\\$&');
-  const image = `![${alt}](data:image/svg+xml;base64,${toBase64(svg)})`;
+  const image =
+    html && block
+      ? `<p align="center"><img alt="${htmlAlt}" src="data:image/svg+xml;base64,${toBase64(svg)}"></p>`
+      : `![${alt}](data:image/svg+xml;base64,${toBase64(svg)})`;
   return block ? `\n${prefix}\n${prefix}${image}\n${prefix}\n${prefix}` : image;
 }
 

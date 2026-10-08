@@ -53,6 +53,7 @@ describe('LaTeX schema hover integration', function () {
     for (let attempt = 0; attempt < 2; attempt++) {
       const value = await hover();
       assert.equal((value.match(/data:image\/svg\+xml;base64,/g) || []).length, 4);
+      assert.include(value, '<p align="center"><img alt="x=1\\tag{1}\\label{energy}"');
       assert.include(value, '`$HOME$`');
       assert.include(value, '[reference](https://example.com/$x$)');
       assert.include(value, 'Following prose.');

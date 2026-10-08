@@ -77,6 +77,8 @@ export function createMathRenderer(): (tex: string, display: boolean) => string 
       // Each SVG contains its own glyph definitions, including those reused by <use> elements.
       fontCache: 'local',
       localID: 'hover',
+      // An image holds a single SVG, so inline math must not be broken into several.
+      linebreaks: { inline: false },
     }),
   });
   return (tex, display) => adaptor.innerHTML(document.convert(tex, { display }));
