@@ -31,7 +31,7 @@ Schema validation supports JSON Schema `draft-04`, `draft-07`, `2019-09`, and `2
     * Shows schema descriptions for YAML nodes when descriptions are available
     * Shows anchor information when `yaml.hoverAnchor` is enabled
     * Shows schema source information when `yaml.hoverSchemaSource` is enabled
-    * Renders LaTeX math in Markdown hover content when `yaml.hoverLatex` is enabled
+    * Renders LaTeX math in schema descriptions when `yaml.hoverLatex` is enabled
 5. **Formatting**:
    * Formats YAML documents
    * Supports on-type formatting on newline, including automatic indentation for mappings and array items
@@ -54,7 +54,7 @@ The following settings are supported:
 - `yaml.hover`: Enable/disable hover. Defaults to `true`.
 - `yaml.hoverAnchor`: Enable/disable hover feature for anchors. Defaults to `true`.
 - `yaml.hoverSchemaSource`: Enable/disable showing the schema source in hover tooltips. Defaults to `true`.
-- `yaml.hoverLatex`: Render LaTeX math in schema Markdown hover descriptions as local SVG images. Defaults to `false`. See [Mathematical expressions in hovers](#mathematical-expressions-in-hovers).
+- `yaml.hoverLatex`: Render LaTeX math in schema hover descriptions as local SVG images. Defaults to `false`. See [Mathematical expressions in hovers](#mathematical-expressions-in-hovers).
 - `yaml.completion`: Enable/disable autocompletion. Defaults to `true`.
 - `yaml.disableDefaultProperties`: Disable adding not required properties with default values into completion text. Defaults to `false`.
 - `yaml.suggest.parentSkeletonSelectedFirst`: If true, the user must select some parent skeleton first before autocompletion starts to suggest the rest of the properties. When the YAML object is not empty, autocompletion ignores this setting and returns all properties and skeletons. Defaults to `false`.
@@ -86,7 +86,7 @@ The following settings are supported:
 
 ## Mathematical expressions in hovers
 
-Enable `yaml.hoverLatex` to render mathematical expressions in schema `markdownDescription` fields:
+Enable `yaml.hoverLatex` to render mathematical expressions in schema `markdownDescription` and `description` fields:
 
 ```json
 {
@@ -109,6 +109,8 @@ For example, this JSON schema describes a YAML property with an equation:
 ```
 
 Use `$...$` or `\(...\)` for inline equations. Use `$$...$$` or `\[...\]` on separate lines for display equations. Backslashes must be escaped in JSON strings, as in the example above. Escaped dollars, code examples, and link destinations retain their Markdown meaning.
+
+In a plain `description`, only `$...$` and `$$...$$` on a single line delimit equations; parentheses and brackets always remain text. The same applies to a `markdownDescription` paragraph whose only punctuation is escaped, because it cannot be told apart from a plain `description`.
 
 Rendering uses bundled MathJax and SVG fonts; equations are not sent to an external service. Supported notation includes AMS mathematics, matrices, aligned equations, custom commands, `mathtools`, cases, cancellation, colors, physics notation, chemistry (`mhchem`), and commutative diagrams. Macros and labels are scoped to one description, with definitions available to later equations in that description. This is mathematical TeX support, not a complete LaTeX installation: document preambles, arbitrary `\usepackage` commands, TikZ, and external files are not supported.
 

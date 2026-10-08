@@ -1,2 +1,3 @@
 # yaml-language-server: $schema=./latex-hover.schema.json
 energy: 1
+ratio: 1

@@ -25,17 +25,17 @@ describe('LaTeX schema hover integration', function () {
     await configuration.update('hoverLatex', previous, vscode.ConfigurationTarget.Workspace);
   });
 
-  async function hover(): Promise<string> {
+  async function hover(line = 1, marker = 'Following prose.'): Promise<string> {
     for (let attempt = 0; attempt < 40; attempt++) {
       const results = await vscode.commands.executeCommand<vscode.Hover[]>(
         'vscode.executeHoverProvider',
         document.uri,
-        new vscode.Position(1, 2)
+        new vscode.Position(line, 2)
       );
       const value = results
         .map((result) => result.contents.map((content) => (typeof content === 'string' ? content : content.value)).join('\n'))
         .join('\n');
-      if (value.includes('Following prose.')) return value;
+      if (value.includes(marker)) return value;
       await new Promise<void>((resolve) => setTimeout(resolve, 100));
     }
     assert.fail('Schema hover did not become available');
@@ -57,6 +57,13 @@ describe('LaTeX schema hover integration', function () {
       assert.include(value, '[reference](https://example.com/$x$)');
       assert.include(value, 'Following prose.');
     }
+  });
+
+  it('renders equations but not parentheses or brackets in plain descriptions', async () => {
+    await configuration.update('hoverLatex', true, vscode.ConfigurationTarget.Workspace);
+    const value = await hover(2, 'Following plain prose');
+    assert.equal((value.match(/data:image\/svg\+xml;base64,/g) || []).length, 1);
+    assert.include(value, '\\(exact\\) \\[unitless\\]');
   });
 
   it('takes effect without restarting the language server', async () => {

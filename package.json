@@ -230,7 +230,7 @@
         "yaml.hoverLatex": {
           "type": "boolean",
           "default": false,
-          "markdownDescription": "Render LaTeX math in schema Markdown hover descriptions as local SVG images. Supports `$...$`, `$$...$$`, `\\(...\\)`, and `\\[...\\]`. Unsupported or oversized equations are left as source.",
+          "markdownDescription": "Render LaTeX math in schema hover descriptions as local SVG images. Supports `$...$`, `$$...$$`, `\\(...\\)`, and `\\[...\\]`. Unsupported or oversized equations are left as source.",
           "scope": "resource"
         },
         "yaml.completion": {
