@@ -15,6 +15,8 @@ import { getRedHatService } from '@redhat-developer/vscode-redhat-telemetry/lib/
 // this method is called when vs code is activated
 export async function activate(context: ExtensionContext): Promise<SchemaExtensionAPI | undefined> {
   const extensionUri = context.extensionUri;
+  // Resolve optional renderer chunks relative to this extension, not the shared extension-host worker.
+  __webpack_public_path__ = extensionUri.with({ path: extensionUri.path + '/dist/' }).toString();
   const serverMain = extensionUri.with({
     path: extensionUri.path + '/dist/languageserver-web.js',
   });

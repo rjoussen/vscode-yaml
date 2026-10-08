@@ -19,6 +19,7 @@ import { TelemetryErrorHandler, TelemetryOutputChannel } from './telemetry';
 import { createJSONSchemaStatusBarItem } from './schema-status-bar-item';
 import { initializeRecommendation } from './recommendation';
 import { applyAutoDisableSchemaDetection } from './autoDisableSchemaDetection';
+import { provideLatexHover } from './hover-latex';
 
 export interface ISchemaAssociations {
   [pattern: string]: string[];
@@ -139,6 +140,7 @@ export async function startClient(
       workspace: {
         configuration: applyAutoDisableSchemaDetection,
       },
+      provideHover: provideLatexHover,
     },
   };
 

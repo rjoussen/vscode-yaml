@@ -31,6 +31,7 @@ Schema validation supports JSON Schema `draft-04`, `draft-07`, `2019-09`, and `2
     * Shows schema descriptions for YAML nodes when descriptions are available
     * Shows anchor information when `yaml.hoverAnchor` is enabled
     * Shows schema source information when `yaml.hoverSchemaSource` is enabled
+    * Renders LaTeX math in Markdown hover content when `yaml.hoverLatex` is enabled
 5. **Formatting**:
    * Formats YAML documents
    * Supports on-type formatting on newline, including automatic indentation for mappings and array items
@@ -53,6 +54,7 @@ The following settings are supported:
 - `yaml.hover`: Enable/disable hover. Defaults to `true`.
 - `yaml.hoverAnchor`: Enable/disable hover feature for anchors. Defaults to `true`.
 - `yaml.hoverSchemaSource`: Enable/disable showing the schema source in hover tooltips. Defaults to `true`.
+- `yaml.hoverLatex`: Render LaTeX math in schema Markdown hover descriptions as local SVG images. Defaults to `false`. See [Mathematical expressions in hovers](#mathematical-expressions-in-hovers).
 - `yaml.completion`: Enable/disable autocompletion. Defaults to `true`.
 - `yaml.disableDefaultProperties`: Disable adding not required properties with default values into completion text. Defaults to `false`.
 - `yaml.suggest.parentSkeletonSelectedFirst`: If true, the user must select some parent skeleton first before autocompletion starts to suggest the rest of the properties. When the YAML object is not empty, autocompletion ignores this setting and returns all properties and skeletons. Defaults to `false`.
@@ -81,6 +83,36 @@ The following settings are supported:
   Other VS Code editor settings can also be overridden for YAML files in the `[yaml]` section, including:
   - `editor.formatOnType`
   - `editor.codeLens`
+
+## Mathematical expressions in hovers
+
+Enable `yaml.hoverLatex` to render mathematical expressions in schema `markdownDescription` fields:
+
+```json
+{
+  "yaml.hoverLatex": true
+}
+```
+
+For example, this JSON schema describes a YAML property with an equation:
+
+```json
+{
+  "type": "object",
+  "properties": {
+    "energy": {
+      "type": "number",
+      "markdownDescription": "Energy is $E = mc^2$.\n\n$$\nE = \\frac{1}{2}mv^2\n$$"
+    }
+  }
+}
+```
+
+Use `$...$` or `\(...\)` for inline equations. Use `$$...$$` or `\[...\]` on separate lines for display equations. Backslashes must be escaped in JSON strings, as in the example above. Escaped dollars, code examples, and link destinations retain their Markdown meaning.
+
+Rendering uses bundled MathJax and SVG fonts; equations are not sent to an external service. Supported notation includes AMS mathematics, matrices, aligned equations, custom commands, `mathtools`, cases, cancellation, colors, physics notation, chemistry (`mhchem`), and commutative diagrams. Macros and labels are scoped to one description, with definitions available to later equations in that description. This is mathematical TeX support, not a complete LaTeX installation: document preambles, arbitrary `\usepackage` commands, TikZ, and external files are not supported.
+
+Invalid or unsupported equations remain as source. To keep hovers responsive and avoid VS Code truncating the documentation, rendering is limited to 64 equations per description, 16,384 characters of TeX per equation, and 90,000 characters of resulting Markdown. Delimiter scanning is also bounded to avoid repeated work on malformed input. Equations that exceed these limits remain as source, preserving the surrounding documentation. The same rendering works in desktop and web extensions. Colors follow the light, dark, or high-contrast theme category.
 
 ## Associating schemas
 

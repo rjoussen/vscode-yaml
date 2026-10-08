@@ -1,0 +1,9 @@
+{
+  "type": "object",
+  "properties": {
+    "energy": {
+      "type": "number",
+      "markdownDescription": "Energy $E = mc^2$. Chemistry $\\ce{2H2 + O2 -> 2H2O}$. Macro $\\newcommand{\\R}{\\mathbb{R}}\\R$. Label $$x=1\\tag{1}\\label{energy}$$. Keep `$HOME$` and [reference](https://example.com/$x$). Following prose."
+    }
+  }
+}

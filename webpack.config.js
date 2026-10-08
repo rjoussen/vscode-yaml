@@ -23,16 +23,22 @@ const config = {
     // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
     path: path.resolve(__dirname, 'dist'),
     filename: '[name].js',
+    chunkFilename: '[name].node.js',
     libraryTarget: 'commonjs2',
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },
+  // MathJax uses Object.hasOwn, which is absent in the Node runtime of VS Code 1.63.
+  // Substitute calls in the bundle without modifying the extension host's global objects.
+  plugins: [new webpack.ProvidePlugin({ 'Object.hasOwn': path.resolve(__dirname, 'build/polyfills/objectHasOwn.js') })],
   devtool: 'source-map',
   externals: {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     prettier: 'commonjs prettier',
   },
   resolve: {
+    alias: { '#default-font/svg/default.js': require.resolve('@mathjax/mathjax-tex-font/js/svg/default.js') },
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
+    extensionAlias: { '.js': ['.ts', '.js'] },
     extensions: ['.ts', '.js'],
   },
   module: {
@@ -63,14 +69,21 @@ const clientWeb = {
   },
   output: {
     filename: 'extension-web.js',
+    chunkFilename: '[name].web.js',
+    // VS Code blocks importScripts in the extension host; native imports can load optional chunks.
+    chunkFormat: 'module',
+    chunkLoading: 'import',
+    publicPath: '',
     path: path.join(__dirname, './dist'),
     libraryTarget: 'commonjs',
     devtoolModuleFilenameTemplate: '../[resource-path]',
   },
   resolve: {
     mainFields: ['module', 'main'],
+    extensionAlias: { '.js': ['.ts', '.js'] },
     extensions: ['.ts', '.js'], // support ts-files and js-files
     alias: {
+      '#default-font/svg/default.js': require.resolve('@mathjax/mathjax-tex-font/js/svg/default.js'),
       'node-fetch': 'whatwg-fetch',
       'object-hash': 'object-hash/dist/object_hash.js',
     },
@@ -79,6 +92,9 @@ const clientWeb = {
       'node-fetch': require.resolve('whatwg-fetch'),
       util: require.resolve('util'),
       fs: false,
+      // Development builds of micromark bundle `debug`, which selects its browser implementation at runtime.
+      os: false,
+      tty: false,
     },
   },
   module: {

@@ -2,6 +2,7 @@
 typings/**
 out/**
 test/**
+smoke-test/**
 src/**
 images/**
 node_modules/**
