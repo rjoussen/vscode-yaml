@@ -3,7 +3,8 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 import { createMathRenderer } from './math-renderer';
-import { parseMarkdownMath, MathSpan } from './markdown-math';
+import type { MathSpan } from './markdown-math';
+import { parseMarkdownMath } from './markdown-math';
 
 // VS Code truncates MarkdownString values at 100,000 characters, even inside image data URIs.
 export const MAX_MARKDOWN_LENGTH = 90_000;

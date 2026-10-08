@@ -2,7 +2,8 @@
  *  Copyright (c) Red Hat, Inc. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { CancellationToken, ColorThemeKind, Hover, MarkdownString, Position, TextDocument, window, workspace } from 'vscode';
+import type { CancellationToken, Hover, Position, TextDocument } from 'vscode';
+import { ColorThemeKind, MarkdownString, window, workspace } from 'vscode';
 import type { ProvideHoverSignature } from 'vscode-languageclient';
 
 /**
