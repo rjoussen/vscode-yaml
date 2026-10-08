@@ -59,7 +59,8 @@ export async function parseMarkdownMath(markdown: string): Promise<{ spans: Math
     );
   };
   const result = findMath(markdown, tokenize(true));
-  // Plain `description` text escapes every parenthesis and bracket, so `\(` and `\[` cannot open math there.
+  // Plain `description` text has its brackets escaped, and its parentheses too in older language servers,
+  // so `\(` and `\[` cannot open math there.
   const plain = result.paragraphs.filter((paragraph) => paragraph.plain);
   const inPlain = (span: MathSpan): boolean => plain.some(({ start, end }) => span.start >= start && span.end <= end);
   if (!result.spans.some((span) => inPlain(span) && markdown[span.start] === '\\')) {
@@ -135,14 +136,17 @@ function findMath(markdown: string, events: Event[]): { spans: MathSpan[]; hasHt
   return { spans, hasHtml, paragraphs };
 }
 
-// The characters that the YAML language server escapes when it converts a plain `description` to Markdown.
-const PLAIN_ESCAPES = '\\`*_{}[]()#+-.!';
+// The YAML language server escapes these characters when it converts a plain `description` to Markdown.
+// Older versions also escape the characters of `OLDER_PLAIN_ESCAPES`.
+const PLAIN_ESCAPES = '\\`*_{}[]#+!';
+const OLDER_PLAIN_ESCAPES = '()-.';
 
-/** Whether the text could have been produced by escaping plain text, i.e. all its Markdown punctuation is escaped. */
+/** Whether the text could have been produced by escaping plain text, i.e. its Markdown punctuation is escaped. */
 export function isEscapedPlainText(text: string): boolean {
   for (let i = 0; i < text.length; i++) {
     if (text[i] === '\\') {
-      if (!PLAIN_ESCAPES.includes(text[++i] ?? 'x')) return false;
+      const escaped = text[++i] ?? 'x';
+      if (!PLAIN_ESCAPES.includes(escaped) && !OLDER_PLAIN_ESCAPES.includes(escaped)) return false;
     } else if (PLAIN_ESCAPES.includes(text[i])) {
       return false;
     }

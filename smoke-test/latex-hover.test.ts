@@ -63,7 +63,8 @@ describe('LaTeX schema hover integration', function () {
     await configuration.update('hoverLatex', true, vscode.ConfigurationTarget.Workspace);
     const value = await hover(2, 'Following plain prose');
     assert.equal((value.match(/data:image\/svg\+xml;base64,/g) || []).length, 1);
-    assert.include(value, '\\(exact\\) \\[unitless\\]');
+    // Older language servers also escape the parentheses.
+    assert.match(value, /\\?\(exact\\?\) \\\[unitless\\\]/);
   });
 
   it('takes effect without restarting the language server', async () => {

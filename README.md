@@ -110,7 +110,7 @@ For example, this JSON schema describes a YAML property with an equation:
 
 Use `$...$` or `\(...\)` for inline equations. Use `$$...$$` or `\[...\]` on separate lines for display equations. Backslashes must be escaped in JSON strings, as in the example above. Escaped dollars, code examples, and link destinations retain their Markdown meaning.
 
-In a plain `description`, only `$...$` and `$$...$$` on a single line delimit equations; parentheses and brackets always remain text. The same applies to a `markdownDescription` paragraph whose only punctuation is escaped, because it cannot be told apart from a plain `description`.
+In a plain `description`, use `$...$` and `$$...$$`: parentheses and brackets always remain text, and inline equations must be on a single line. In a `markdownDescription`, `\(...\)` and `\[...\]` are only recognized in a paragraph that also contains Markdown punctuation, such as an unescaped `_`, `*`, or `[`, or a TeX command like `\alpha`, because otherwise the paragraph cannot be told apart from a plain `description`.
 
 Rendering uses bundled MathJax and SVG fonts; equations are not sent to an external service. Supported notation includes AMS mathematics, matrices, aligned equations, custom commands, `mathtools`, cases, cancellation, colors, physics notation, chemistry (`mhchem`), and commutative diagrams. Macros and labels are scoped to one description, with definitions available to later equations in that description. This is mathematical TeX support, not a complete LaTeX installation: document preambles, arbitrary `\usepackage` commands, TikZ, and external files are not supported.
 

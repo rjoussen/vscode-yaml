@@ -165,32 +165,44 @@ describe('LaTeX in Markdown', () => {
     assert.strictEqual(images(await render('\\[\n\\begin{aligned}a&=b\\\\c&=d\\end{aligned}\n\\]')).length, 1);
   });
 
-  // Mirrors how yaml-language-server converts a plain `description` to Markdown.
+  // Mirrors how newer and older versions of yaml-language-server convert a plain `description` to Markdown.
+  const plainEscapes = [/[\\`*_{}[\]#+!]/g, /[\\`*_{}[\]()#+\-.!]/g];
+  let escapes = plainEscapes[0];
   function escapePlain(plain: string): string {
-    return plain.replace(/([^\n\r])(\r?\n)([^\n\r])/gm, '$1\n\n$3').replace(/[\\`*_{}[\]()#+\-.!]/g, '\\$&');
+    return plain.replace(/([^\n\r])(\r?\n)([^\n\r])/gm, '$1\n\n$3').replace(escapes, '\\$&');
   }
+  afterEach(() => {
+    escapes = plainEscapes[0];
+  });
 
   it('keeps parentheses and brackets of plain descriptions as text', async () => {
-    for (const markdown of [
-      escapePlain('Energy (in J) of the system [deprecated].'),
-      '#### ' + escapePlain('Title (v2)'),
-      '* `value`: ' + escapePlain('Mode (default) [x].'),
-    ]) {
-      assert.strictEqual(await render(markdown), markdown);
+    for (escapes of plainEscapes) {
+      for (const markdown of [
+        escapePlain('Energy (in J) of the system [deprecated].'),
+        '#### ' + escapePlain('Title (v2)'),
+        '* `value`: ' + escapePlain('Mode (default) [x].'),
+      ]) {
+        assert.strictEqual(await render(markdown), markdown);
+      }
     }
   });
 
   it('renders equations in plain descriptions', async () => {
-    for (const [plain, tex] of [
-      ['Ratio $\\frac{1}{2}$ (exact).', '\\frac{1}{2}'],
-      ['Index $x_{i+1} - x_i$.', 'x_{i+1} - x_i'],
-      ['Energy $$E = \\frac{1}{2}mv^2$$ here.', 'E = \\frac{1}{2}mv^2'],
-    ]) {
-      const result = await render(escapePlain(plain));
-      assert.deepStrictEqual(images(result), images(await render(plain.includes('$$') ? `$$${tex}$$` : `$${tex}$`)));
+    for (escapes of plainEscapes) {
+      for (const [plain, tex] of [
+        ['Ratio $\\frac{1}{2}$ (exact).', '\\frac{1}{2}'],
+        ['Index $x_{i+1} - x_i$.', 'x_{i+1} - x_i'],
+        ['Energy $$E = \\frac{1}{2}mv^2$$ here.', 'E = \\frac{1}{2}mv^2'],
+      ]) {
+        const result = await render(escapePlain(plain));
+        assert.deepStrictEqual(images(result), images(await render(plain.includes('$$') ? `$$${tex}$$` : `$${tex}$`)));
+      }
+      const fenced = await render(escapePlain('Aligned:\n$$\n\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}\n$$\nDone.'));
+      assert.deepStrictEqual(images(fenced), images(await render('$$\\begin{aligned} a &= b \\\\ c &= d \\end{aligned}$$')));
+      assert.match(fenced, /\nDone\\?\.$/);
+      const result = await render(escapePlain('Energy ($E = mc^2$) in J.'));
+      assert.match(result, /^Energy \\?\(!\[E = mc\^2\]\(data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+\)\\?\) in J\\?\.$/);
     }
-    const result = await render(escapePlain('Energy ($E = mc^2$) in J.'));
-    assert.match(result, /^Energy \\\(!\[E = mc\^2\]\(data:image\/svg\+xml;base64,[A-Za-z0-9+/=]+\)\\\) in J\\\.$/);
   });
 
   it('recovers TeX from escaped plain text only', () => {
